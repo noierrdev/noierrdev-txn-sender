@@ -58,11 +58,11 @@ async fn main() -> anyhow::Result<()> {
     // Init metrics/logging
     let mut main_env: AtlasTxnSenderEnv = Figment::from(Env::raw()).extract().unwrap();
 
-    main_env.rpc_url=env::var("RPC_URL");
-    main_env.grpc_url=env::var("GRPC_URL");
-    main_env.tpu_connection_pool_size=env::var("TPU_CONNECTION_POOL_SIZE");
-    main_env.num_leaders=env::var("NUM_LEADERS");
-    main_env.leader_offset=env::var("LEADER_OFFSET");
+    main_env.rpc_url=Some(env::var("RPC_URL").unwrap());
+    main_env.grpc_url=Some(env::var("GRPC_URL").unwrap());
+    main_env.tpu_connection_pool_size=Some(env::var("TPU_CONNECTION_POOL_SIZE").unwrap());
+    main_env.num_leaders=Some(env::var("NUM_LEADERS").unwrap());
+    main_env.leader_offset=Some(env::var("LEADER_OFFSET").unwrap());
     
     println!("{:?}", main_env);
     let env_filter = env::var("RUST_LOG")
