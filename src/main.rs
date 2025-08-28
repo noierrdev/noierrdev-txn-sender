@@ -56,6 +56,7 @@ static GLOBAL: Jemalloc = Jemalloc;
 async fn main() -> anyhow::Result<()> {
     // Init metrics/logging
     let env: AtlasTxnSenderEnv = Figment::from(Env::raw()).extract().unwrap();
+    println!("{:?}", env);
     let env_filter = env::var("RUST_LOG")
         .or::<Result<String, ()>>(Ok("info".to_string()))
         .unwrap();
