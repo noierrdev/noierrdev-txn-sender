@@ -61,7 +61,7 @@ async fn main() -> anyhow::Result<()> {
     main_env.rpc_url=Some(env::var("RPC_URL").unwrap());
     main_env.grpc_url=Some(env::var("GRPC_URL").unwrap());
     main_env.tpu_connection_pool_size=Some(env::var("TPU_CONNECTION_POOL_SIZE").unwrap().parse::<usize>().unwrap_or(6));
-    main_env.num_leaders=Some(env::var("NUM_LEADERS").unwrap().parse::<i64>().unwrap_or(6));
+    main_env.num_leaders=Some(env::var("NUM_LEADERS").unwrap().parse::<usize>().unwrap_or(6));
     main_env.leader_offset=Some(env::var("LEADER_OFFSET").unwrap().parse::<i64>().unwrap_or(0));
     
     println!("{:?}", main_env);
