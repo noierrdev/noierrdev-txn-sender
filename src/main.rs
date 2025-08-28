@@ -54,9 +54,17 @@ static GLOBAL: Jemalloc = Jemalloc;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    dotenv::dotenv().ok();
     // Init metrics/logging
-    let env: AtlasTxnSenderEnv = Figment::from(Env::raw()).extract().unwrap();
-    println!("{:?}", env);
+    let mut main_env: AtlasTxnSenderEnv = Figment::from(Env::raw()).extract().unwrap();
+
+    main_env.rpc_url=env::var("RPC_URL");
+    main_env.grpc_url=env::var("GRPC_URL");
+    main_env.tpu_connection_pool_size=env::var("TPU_CONNECTION_POOL_SIZE");
+    main_env.num_leaders=env::var("NUM_LEADERS");
+    main_env.leader_offset=env::var("LEADER_OFFSET");
+    
+    println!("{:?}", main_env);
     let env_filter = env::var("RUST_LOG")
         .or::<Result<String, ()>>(Ok("info".to_string()))
         .unwrap();
@@ -69,7 +77,7 @@ async fn main() -> anyhow::Result<()> {
     let service_builder = tower::ServiceBuilder::new()
         // Proxy `GET /health` requests to internal `health` method.
         .layer(ProxyGetRequestLayer::new("/health", "health")?);
-    let port = env.port.unwrap_or(4040);
+    let port = main_env.port.unwrap_or(4040);
 
     let server = ServerBuilder::default()
         .set_middleware(service_builder)
@@ -78,11 +86,11 @@ async fn main() -> anyhow::Result<()> {
         .build(format!("0.0.0.0:{}", port))
         .await
         .unwrap();
-    let tpu_connection_pool_size = env
+    let tpu_connection_pool_size = main_env
         .tpu_connection_pool_size
         .unwrap_or(DEFAULT_TPU_CONNECTION_POOL_SIZE);
     let connection_cache;
-    if let Some(identity_keypair_file) = env.identity_keypair_file.clone() {
+    if let Some(identity_keypair_file) = main_env.identity_keypair_file.clone() {
         let identity_keypair =
             read_keypair_file(identity_keypair_file).expect("keypair file must exist");
         connection_cache = Arc::new(ConnectionCache::new_with_client_options(
@@ -105,29 +113,29 @@ async fn main() -> anyhow::Result<()> {
 
     let transaction_store = Arc::new(TransactionStoreImpl::new());
     let solana_rpc = Arc::new(GrpcGeyserImpl::new(
-        env.grpc_url.clone().unwrap(),
-        env.x_token.clone(),
+        main_env.grpc_url.clone().unwrap(),
+        main_env.x_token.clone(),
     ));
-    let rpc_client = Arc::new(RpcClient::new(env.rpc_url.unwrap()));
-    let num_leaders = env.num_leaders.unwrap_or(2);
-    let leader_offset = env.leader_offset.unwrap_or(0);
+    let rpc_client = Arc::new(RpcClient::new(main_env.rpc_url.unwrap()));
+    let num_leaders = main_env.num_leaders.unwrap_or(2);
+    let leader_offset = main_env.leader_offset.unwrap_or(0);
     let leader_tracker = Arc::new(LeaderTrackerImpl::new(
         rpc_client,
         solana_rpc.clone(),
         num_leaders,
         leader_offset,
     ));
-    let txn_send_retry_interval_seconds = env.txn_send_retry_interval.unwrap_or(2);
+    let txn_send_retry_interval_seconds = main_env.txn_send_retry_interval.unwrap_or(2);
     let txn_sender = Arc::new(TxnSenderImpl::new(
         leader_tracker,
         transaction_store.clone(),
         connection_cache,
         solana_rpc,
-        env.txn_sender_threads.unwrap_or(4),
+        main_env.txn_sender_threads.unwrap_or(4),
         txn_send_retry_interval_seconds,
-        env.max_retry_queue_size,
+        main_env.max_retry_queue_size,
     ));
-    let max_txn_send_retries = env.max_txn_send_retries.unwrap_or(5);
+    let max_txn_send_retries = main_env.max_txn_send_retries.unwrap_or(5);
     let atlas_txn_sender =
         AtlasTxnSenderImpl::new(txn_sender, transaction_store, max_txn_send_retries);
     let handle = server.start(atlas_txn_sender.into_rpc());
