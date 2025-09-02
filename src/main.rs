@@ -58,8 +58,8 @@ async fn main() -> anyhow::Result<()> {
     // Init metrics/logging
     let mut main_env: AtlasTxnSenderEnv = Figment::from(Env::raw()).extract().unwrap();
 
-    main_env.rpc_url=Some(env::var("RPC_URL").unwrap_or("http://localhost:8899"));
-    main_env.grpc_url=Some(env::var("GRPC_URL").unwrap_or("http://localhost:10000"));
+    main_env.rpc_url=Some(env::var("RPC_URL").unwrap_or("http://localhost:8899".to_string()));
+    main_env.grpc_url=Some(env::var("GRPC_URL").unwrap_or("http://localhost:10000").to_string());
     main_env.tpu_connection_pool_size=Some(env::var("TPU_CONNECTION_POOL_SIZE").unwrap().parse::<usize>().unwrap_or(6));
     main_env.num_leaders=Some(env::var("NUM_LEADERS").unwrap().parse::<usize>().unwrap_or(6));
     main_env.leader_offset=Some(env::var("LEADER_OFFSET").unwrap().parse::<i64>().unwrap_or(0));
