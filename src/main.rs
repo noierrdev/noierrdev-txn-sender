@@ -63,7 +63,7 @@ async fn main() -> anyhow::Result<()> {
     main_env.tpu_connection_pool_size=Some(env::var("TPU_CONNECTION_POOL_SIZE").unwrap_or("6".to_string()).parse::<usize>().unwrap_or(6));
     main_env.num_leaders=Some(env::var("NUM_LEADERS").unwrap_or("6".to_string()).parse::<usize>().unwrap_or(6));
     main_env.leader_offset=Some(env::var("LEADER_OFFSET").unwrap_or("0".to_string()).parse::<i64>().unwrap_or(0));
-    main_env.port=Some(env::var("PORT").unwrap("4040".to_string()).parse::<u16>().unwrap_or(4040));
+    main_env.port=Some(env::var("PORT").unwrap_or("4040".to_string()).parse::<u16>().unwrap_or(4040));
     
     println!("{:?}", main_env);
     let env_filter = env::var("RUST_LOG")
