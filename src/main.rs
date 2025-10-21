@@ -60,10 +60,10 @@ async fn main() -> anyhow::Result<()> {
 
     main_env.rpc_url=Some(env::var("RPC_URL").unwrap_or("http://localhost:8899".to_string()));
     main_env.grpc_url=Some(env::var("GRPC_URL").unwrap_or("http://localhost:10000".to_string()));
-    main_env.tpu_connection_pool_size=Some(env::var("TPU_CONNECTION_POOL_SIZE").unwrap_or("6").parse::<usize>().unwrap_or(6));
-    main_env.num_leaders=Some(env::var("NUM_LEADERS").unwrap().parse::<usize>().unwrap_or(6));
-    main_env.leader_offset=Some(env::var("LEADER_OFFSET").unwrap().parse::<i64>().unwrap_or(0));
-    main_env.port=Some(env::var("PORT").unwrap().parse::<u16>().unwrap_or(4040));
+    main_env.tpu_connection_pool_size=Some(env::var("TPU_CONNECTION_POOL_SIZE").unwrap_or("6".to_string()).parse::<usize>().unwrap_or(6));
+    main_env.num_leaders=Some(env::var("NUM_LEADERS").unwrap_or("6".to_string()).parse::<usize>().unwrap_or(6));
+    main_env.leader_offset=Some(env::var("LEADER_OFFSET").unwrap_or("0".to_string()).parse::<i64>().unwrap_or(0));
+    main_env.port=Some(env::var("PORT").unwrap("4040".to_string()).parse::<u16>().unwrap_or(4040));
     
     println!("{:?}", main_env);
     let env_filter = env::var("RUST_LOG")
